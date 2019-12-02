@@ -1,12 +1,13 @@
 #include "cuintrospectionplugin.h"
-#include <cuintrospectionengineextensionplugin_i.h>
 #include <cuthreadservice.h>
+#include <cutimerservice.h>
 #include <cuactivitymanager.h>
 #include <qustring.h>
 #include <qustringlist.h>
 #include <cumbia.h>
 #include <cuserviceprovider.h>
 #include <cuthread.h>
+#include <cutimer.h>
 #include <QStandardItemModel>
 #include <QStandardItem>
 #include <QtDebug>
@@ -22,10 +23,11 @@ class CuIntrospectionPluginPrivate {
 public:
     int thread_count;
     QMap<QString, ThreadInfo> thmap;
+    QMap<QString, TimerInfo> timermap;
     Cumbia *cumbia;
     QStringList errors, name_search_keys;
     QDialog *dialog;
-    CuIntrospectionEngineExtensionPlugin_I *engine_extension;
+    CuIntrospectionEngineExtensionI *engine_extension;
     QStandardItemModel *model;
 };
 
@@ -120,6 +122,7 @@ void CuIntrospectionPlugin::update() {
         d->thread_count = 0;
         CuThreadService *th_service = static_cast<CuThreadService *>(d->cumbia->getServiceProvider()->get(CuServices::Thread));
         CuActivityManager* aman = static_cast<CuActivityManager *>(d->cumbia->getServiceProvider()->get(CuServices::ActivityManager));
+        CuTimerService *timer_service = static_cast<CuTimerService *>(d->cumbia->getServiceProvider()->get(CuServices::Timer));
         std::list<CuThreadInterface *> thll = th_service->getThreads();
         foreach(CuThreadInterface *l, thll) {
             ThreadInfo thi;
@@ -128,7 +131,6 @@ void CuIntrospectionPlugin::update() {
                 d->thread_count++;
                 CuThread *cut = static_cast<CuThread *>(l);
                 thi.token = cut->getToken();
-                thi.id = cut->getId();
                 thi.activities = aman->activitiesForThread(cut);
                 QString thnam = findName(thi.token);
                 if(!thnam.isEmpty()) {
@@ -141,6 +143,19 @@ void CuIntrospectionPlugin::update() {
                 else
                     d->errors.append(QString("CuIntrospectionPlugin: could not guess thread name from \"%1\"").arg(thi.token.toString().c_str()));
             }
+        }
+        std::list<CuTimer *> timers = timer_service->getTimers();
+        int tcnt = 0;
+        for(std::list<CuTimer *>::const_iterator it = timers.begin(); it != timers.end(); ++it) {
+            d->thread_count++;
+            tcnt++;
+            uintptr_t iptr = reinterpret_cast<uintptr_t>(*it);
+            std::list<CuTimerListener *>tlist = timer_service->getListeners(*it);
+            TimerInfo ti;
+            ti.name = QString("CuTimer_%1 [0x%2]").arg(tcnt).arg(iptr, 0, 10);
+            ti.timeout = (*it)->timeout();
+            ti.timer_listeners = QList<CuTimerListener*>::fromStdList(tlist);
+            d->timermap[ti.name] = ti;
         }
     }
 }
@@ -179,7 +194,7 @@ QStandardItemModel *CuIntrospectionPlugin::toItemModel() const {
         const QString thnam = d->thmap.keys()[i];
         const ThreadInfo &ti = d->thmap[thnam];
         QStandardItem *th_item = new QStandardItem(thnam);
-        parentItem->appendRow(QList<QStandardItem *>() << th_item << new QStandardItem(QString("0x%1").arg(ti.id, 0, 16)));
+        parentItem->appendRow(QList<QStandardItem *>() << th_item);
         for(size_t j = 0; j < ti.activities.size(); j++) {
             const CuActivity *a = ti.activities[j];
             QStandardItem *dev_it = nullptr;
@@ -199,22 +214,39 @@ QStandardItemModel *CuIntrospectionPlugin::toItemModel() const {
                     dev_it->appendRow(QList<QStandardItem *>() << ait << aitv);
 
                     if(d->engine_extension && ait->text() == "activity") {
-                        QList<QStandardItem *> activity_items = d->engine_extension->activityChildItems(a);
-                        ait->appendRow(activity_items);
+                        QList<QList <QStandardItem *> > rows =  d->engine_extension->activityChildRows(a);
+                        foreach(QList<QStandardItem *> activity_items, rows)
+                            ait->appendRow(activity_items);
                     }
                 }
             }
             if(!dev_it) {
                 d->errors.append(QString("ThreadInfoHelper::toItemModel: token \"%1\" does not contain the \"device\" key")
-                        .arg(atok.toString().c_str()));
+                                 .arg(atok.toString().c_str()));
             }
         }
-        if(d->errors.size()) {
-            QStandardItem *error_item = new QStandardItem("errors");
-            parentItem->appendRow(error_item);
-            foreach(QString err, d->errors)
-                parentItem->appendRow(new QStandardItem(err));
+    }
+
+    foreach(QString timernam, d->timermap.keys()) {
+        QStandardItem *timer_it = new QStandardItem(timernam);
+        const TimerInfo &ti = d->timermap[timernam];
+        parentItem->appendRow(QList<QStandardItem *>() << timer_it << new QStandardItem(QString("%1 [ms]").arg(ti.timeout)) );
+        foreach(CuTimerListener *tlis, ti.timer_listeners) {
+            CuThread *th = dynamic_cast<CuThread *>(tlis);
+            if(th != nullptr) {
+                const CuData& tok = th->getToken();
+                QString thnam = findName(tok);
+                timer_it->appendRow(new QStandardItem (thnam));
+            }
         }
+
+
+    }
+    if(d->errors.size()) {
+        QStandardItem *error_item = new QStandardItem("errors");
+        parentItem->appendRow(error_item);
+        foreach(QString err, d->errors)
+            parentItem->appendRow(new QStandardItem(err));
     }
     return d->model;
 }
@@ -229,7 +261,7 @@ QStandardItemModel *CuIntrospectionPlugin::toItemModel() const {
  * when the object is deleted. Subsequent calls to installEngineExtension will dispose the
  * previously installed engine extension
  */
-void CuIntrospectionPlugin::installEngineExtension(CuIntrospectionEngineExtensionPlugin_I *eei) {
+void CuIntrospectionPlugin::installEngineExtension(CuIntrospectionEngineExtensionI *eei) {
     if(d->engine_extension)
         delete d->engine_extension;
     d->engine_extension = eei;

@@ -9,19 +9,19 @@ class QDialog;
 class CuIntrospectionPluginPrivate;
 class QStandardItem;
 class Cumbia;
-class CuIntrospectionEngineExtensionPlugin_I;
+class CuIntrospectionEngineExtensionI;
 
 class CuIntrospectionPlugin :  public QObject, public CumbiaIntrospectionPlugin_I
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "cumbia-qtcontrols-introspection-plugin.json")
+    Q_INTERFACES(CumbiaIntrospectionPlugin_I)
 
 public:
     explicit CuIntrospectionPlugin(QObject *parent = nullptr);
 
     ~CuIntrospectionPlugin();
 
-    Q_INTERFACES(CumbiaIntrospectionPlugin_I)
 
 public slots:
     void showDialog();
@@ -42,7 +42,7 @@ public:
     const ThreadInfo getThreadInfo(const QString &name);
     QStringList errors() const;
     QStandardItemModel *toItemModel() const;
-    void installEngineExtension(CuIntrospectionEngineExtensionPlugin_I *eei);
+    void installEngineExtension(CuIntrospectionEngineExtensionI *eei);
     QDialog *getDialog(QWidget *parent);
 
 private:

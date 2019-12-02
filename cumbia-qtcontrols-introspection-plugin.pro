@@ -1,5 +1,8 @@
+isEmpty(INSTALL_ROOT) {
+    INSTALL_ROOT = /usr/local/cumbia-libs
+}
 
-include(/usr/local/cumbia-libs/include/cumbia-qtcontrols/cumbia-qtcontrols.pri)
+include($${INSTALL_ROOT}/include/cumbia-qtcontrols/cumbia-qtcontrols.pri)
 
 SOURCES += \
     src/cuintrospectionplugin.cpp
@@ -14,7 +17,7 @@ QT       += core gui
 
 TARGET = cumbia-qtcontrols-introspection-plugin
 TEMPLATE = lib
-CONFIG += plugin c++11
+CONFIG += plugin c++17
 
 
 CONFIG += debug
