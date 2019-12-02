@@ -18,6 +18,7 @@ QT       += core gui
 TARGET = cumbia-qtcontrols-introspection-plugin
 TEMPLATE = lib
 CONFIG += plugin c++17
+VERSION = 1.1.0
 
 
 CONFIG += debug
