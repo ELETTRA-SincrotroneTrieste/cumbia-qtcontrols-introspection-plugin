@@ -17,10 +17,11 @@ QT       += core gui
 
 TARGET = cumbia-qtcontrols-introspection-plugin
 TEMPLATE = lib
-CONFIG += plugin c++17
+CONFIG += plugin
+QMAKE_CXXFLAGS = -std=c++17
 
 packagesExist(cumbia) {
-PKGCONFIG += cumbia
+    PKGCONFIG += cumbia
 }else {
     message("cumbia-qtcontrols-introspection-plugin: missing dependency cumbia in PKG_CONFIG_PATH")
 }
