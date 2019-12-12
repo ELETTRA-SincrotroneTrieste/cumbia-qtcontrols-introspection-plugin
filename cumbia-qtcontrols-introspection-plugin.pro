@@ -18,8 +18,12 @@ QT       += core gui
 TARGET = cumbia-qtcontrols-introspection-plugin
 TEMPLATE = lib
 CONFIG += plugin c++17
-VERSION = 1.1.0
 
+packagesExist(cumbia) {
+PKGCONFIG += cumbia
+}else {
+    message("cumbia-qtcontrols-introspection-plugin: missing dependency cumbia in PKG_CONFIG_PATH")
+}
 
 CONFIG += debug
 DEFINES -= QT_NO_DEBUG_OUTPUT
@@ -40,11 +44,17 @@ INC_PATH = $${INSTALL_ROOT}/include/qumbia-plugins
 inc.files = src/cuintrospectionplugin.h
 inc.path = $${INC_PATH}
 
+doc.path = $${INSTALL_ROOT}/share/doc/cumbia-qtcontrols-introspection-plugin
+doc.files = doc/*
+doc.commands = \
+doxygen \
+Doxyfile;
+QMAKE_EXTRA_TARGETS += doc
 
-unix {
+
     target.path = $${DEFINES_CUMBIA_QTCONTROLS_PLUGIN_DIR}
-    INSTALLS += target inc
-}
+    INSTALLS += target inc doc
+
 
 message("cumbia-qtcontrols-introspection-plugin: plugin installation dir:  $${DEFINES_CUMBIA_QTCONTROLS_PLUGIN_DIR}")
 message("cumbia-qtcontrols-introspection-plugin: include installation dir: $${INC_PATH}")
