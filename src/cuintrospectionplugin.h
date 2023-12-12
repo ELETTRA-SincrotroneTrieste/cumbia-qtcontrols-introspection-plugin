@@ -34,7 +34,7 @@ private:
 
     // CumbiaIntrospectionPlugin_I interface
 public:
-    void init(Cumbia *cumbia, const QStringList& name_search_keys = QStringList() << "th_tok" << "device");
+    void init(Cumbia *cumbia);
     int getThreadCount() const;
     void update();
     QMap<QString, ThreadInfo> getThreadInfo();

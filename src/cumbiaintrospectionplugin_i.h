@@ -21,7 +21,7 @@ class TimerInfo {
 public:
     QString name;
     int timeout;
-    QList<CuTimerListener *> timer_listeners;
+    QList<const CuTimerListener *> timer_listeners;
 };
 
 class ThreadInfo {

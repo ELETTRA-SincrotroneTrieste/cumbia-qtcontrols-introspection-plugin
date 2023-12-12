@@ -25,7 +25,7 @@ public:
     QMap<QString, ThreadInfo> thmap;
     QMap<QString, TimerInfo> timermap;
     Cumbia *cumbia;
-    QStringList errors, name_search_keys;
+    QStringList errors;
     QDialog *dialog;
     CuIntrospectionEngineExtensionI *engine_extension;
     QStandardItemModel *model;
@@ -102,10 +102,9 @@ void CuIntrospectionPlugin::onDialogDestroyed(QObject *) {
  * \param cumbia
  * \param name_search_keys
  */
-void CuIntrospectionPlugin::init(Cumbia *cumbia, const QStringList &name_search_keys)
+void CuIntrospectionPlugin::init(Cumbia *cumbia)
 {
     d->cumbia = cumbia;
-    d->name_search_keys = name_search_keys;
 }
 
 int CuIntrospectionPlugin::getThreadCount() const {
@@ -124,7 +123,7 @@ void CuIntrospectionPlugin::update() {
         CuActivityManager* aman = static_cast<CuActivityManager *>(d->cumbia->getServiceProvider()->get(CuServices::ActivityManager));
         CuTimerService *timer_service = static_cast<CuTimerService *>(d->cumbia->getServiceProvider()->get(CuServices::Timer));
         std::vector<CuThreadInterface *> thll = th_service->getThreads();
-        foreach(CuThreadInterface *l, thll) {
+        for(CuThreadInterface *l : thll) {
             ThreadInfo thi;
             thcnt++;
             if(l->type() == 0)  { // CuThread
@@ -150,14 +149,14 @@ void CuIntrospectionPlugin::update() {
             d->thread_count++;
             tcnt++;
             uintptr_t iptr = reinterpret_cast<uintptr_t>(*it);
-            std::list<const CuTimerListener *>tlist = timer_service->getListeners(*it);
+            const std::list<const CuTimerListener *> &tlist = timer_service->getListeners(*it);
             TimerInfo ti;
             ti.name = QString("CuTimer_%1 [0x%2]").arg(tcnt).arg(iptr, 0, 10);
             ti.timeout = (*it)->timeout();
 #if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
-            ti.timer_listeners = QList<CuTimerListener*>(tlist.begin(), tlist.end());
+            ti.timer_listeners = QList<const CuTimerListener*>(tlist.begin(), tlist.end());
 #else
-            ti.timer_listeners = QList<CuTimerListener*>::fromStdList(tlist);
+            ti.timer_listeners = QList<const CuTimerListener*>::fromStdList(tlist);
 #endif
             d->timermap[ti.name] = ti;
         }
@@ -226,11 +225,11 @@ QStandardItemModel *CuIntrospectionPlugin::toItemModel() const {
         QStandardItem *timer_it = new QStandardItem(timernam);
         const TimerInfo &ti = d->timermap[timernam];
         parentItem->appendRow(QList<QStandardItem *>() << timer_it << new QStandardItem(QString("%1 [ms]").arg(ti.timeout)) );
-        foreach(CuTimerListener *tlis, ti.timer_listeners) {
-            CuThread *th = dynamic_cast<CuThread *>(tlis);
+        foreach(const CuTimerListener *tlis, ti.timer_listeners) {
+            const CuThread *th = dynamic_cast<const CuThread *>(tlis);
             if(th != nullptr) {
                 const std::string& tok = th->getToken();
-                const QString &thnam = findName(tok);
+                const QString &thnam = QString::fromStdString(tok);
                 timer_it->appendRow(new QStandardItem (thnam));
             }
         }

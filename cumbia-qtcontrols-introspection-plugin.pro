@@ -8,7 +8,8 @@ SOURCES += \
     src/cuintrospectionplugin.cpp
 
 HEADERS += \
-    src/cuintrospectionplugin.h
+    src/cuintrospectionplugin.h \
+    src/cumbiaintrospectionplugin_i.h
 
 DISTFILES += cumbia-qtcontrols-introspection-plugin.json  \
     README.md
@@ -29,6 +30,8 @@ packagesExist(cumbia) {
 
 CONFIG += debug
 DEFINES -= QT_NO_DEBUG_OUTPUT
+
+INCLUDEPATH += src
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
