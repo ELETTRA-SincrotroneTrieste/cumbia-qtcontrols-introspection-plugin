@@ -132,7 +132,7 @@ void CuIntrospectionPlugin::update() {
                 CuThread *cut = static_cast<CuThread *>(l);
                 thi.token = cut->getToken();
                 thi.activities = aman->activitiesForThread(cut);
-                QString thnam = findName(thi.token);
+                QString thnam = QString::fromStdString(thi.token);
                 if(!thnam.isEmpty()) {
                     if(d->thmap.contains(thnam))
                         d->errors.append("CuIntrospectionPlugin: duplicate thread name " + thnam + "!");
@@ -162,10 +162,6 @@ void CuIntrospectionPlugin::update() {
             d->timermap[ti.name] = ti;
         }
     }
-}
-
-QString CuIntrospectionPlugin::findName(const std::string &th_tok) const {
-    return QString::fromStdString(th_tok);
 }
 
 QMap<QString, ThreadInfo> CuIntrospectionPlugin::getThreadInfo() {

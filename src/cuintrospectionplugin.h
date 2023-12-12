@@ -37,7 +37,6 @@ public:
     void init(Cumbia *cumbia, const QStringList& name_search_keys = QStringList() << "th_tok" << "device");
     int getThreadCount() const;
     void update();
-    QString findName(const std::string &th_tok) const;
     QMap<QString, ThreadInfo> getThreadInfo();
     const ThreadInfo getThreadInfo(const QString &name);
     QStringList errors() const;
