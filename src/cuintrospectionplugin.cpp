@@ -123,7 +123,7 @@ void CuIntrospectionPlugin::update() {
         CuThreadService *th_service = static_cast<CuThreadService *>(d->cumbia->getServiceProvider()->get(CuServices::Thread));
         CuActivityManager* aman = static_cast<CuActivityManager *>(d->cumbia->getServiceProvider()->get(CuServices::ActivityManager));
         CuTimerService *timer_service = static_cast<CuTimerService *>(d->cumbia->getServiceProvider()->get(CuServices::Timer));
-        std::list<CuThreadInterface *> thll = th_service->getThreads();
+        std::vector<CuThreadInterface *> thll = th_service->getThreads();
         foreach(CuThreadInterface *l, thll) {
             ThreadInfo thi;
             thcnt++;
@@ -154,7 +154,11 @@ void CuIntrospectionPlugin::update() {
             TimerInfo ti;
             ti.name = QString("CuTimer_%1 [0x%2]").arg(tcnt).arg(iptr, 0, 10);
             ti.timeout = (*it)->timeout();
+#if QT_VERSION >= QT_VERSION_CHECK(15,0,0)
+            ti.timer_listeners = QList<CuTimerListener*>(tlist.begin(), tlist.end());
+#else
             ti.timer_listeners = QList<CuTimerListener*>::fromStdList(tlist);
+#endif
             d->timermap[ti.name] = ti;
         }
     }
@@ -234,7 +238,7 @@ QStandardItemModel *CuIntrospectionPlugin::toItemModel() const {
         foreach(CuTimerListener *tlis, ti.timer_listeners) {
             CuThread *th = dynamic_cast<CuThread *>(tlis);
             if(th != nullptr) {
-                const CuData& tok = th->getToken();
+                const std::string& tok = th->getToken();
                 QString thnam = findName(tok);
                 timer_it->appendRow(new QStandardItem (thnam));
             }
