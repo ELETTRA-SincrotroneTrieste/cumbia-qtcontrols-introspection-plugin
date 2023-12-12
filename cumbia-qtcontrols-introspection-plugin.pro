@@ -19,6 +19,7 @@ TARGET = cumbia-qtcontrols-introspection-plugin
 TEMPLATE = lib
 CONFIG += plugin
 QMAKE_CXXFLAGS = -std=c++17
+VERSION = 1.1.0
 
 packagesExist(cumbia) {
     PKGCONFIG += cumbia
