@@ -141,7 +141,7 @@ void CuIntrospectionPlugin::update() {
                     }
                 }
                 else
-                    d->errors.append(QString("CuIntrospectionPlugin: could not guess thread name from \"%1\"").arg(thi.token.toString().c_str()));
+                    d->errors.append(QString("CuIntrospectionPlugin: could not guess thread name from \"%1\"").arg(thi.token.c_str()));
             }
         }
         std::list<CuTimer *> timers = timer_service->getTimers();
@@ -154,7 +154,7 @@ void CuIntrospectionPlugin::update() {
             TimerInfo ti;
             ti.name = QString("CuTimer_%1 [0x%2]").arg(tcnt).arg(iptr, 0, 10);
             ti.timeout = (*it)->timeout();
-#if QT_VERSION >= QT_VERSION_CHECK(15,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
             ti.timer_listeners = QList<CuTimerListener*>(tlist.begin(), tlist.end());
 #else
             ti.timer_listeners = QList<CuTimerListener*>::fromStdList(tlist);
