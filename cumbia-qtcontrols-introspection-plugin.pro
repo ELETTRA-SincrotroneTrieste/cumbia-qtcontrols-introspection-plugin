@@ -43,7 +43,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 INC_PATH = $${INSTALL_ROOT}/include/qumbia-plugins
-inc.files = src/cuintrospectionplugin.h
+inc.files = src/cuintrospectionplugin.h src/cumbiaintrospectionplugin_i.h
 inc.path = $${INC_PATH}
 
 doc.path = $${INSTALL_ROOT}/share/doc/cumbia-qtcontrols-introspection-plugin
