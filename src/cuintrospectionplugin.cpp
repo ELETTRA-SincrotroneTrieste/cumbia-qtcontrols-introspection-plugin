@@ -150,7 +150,7 @@ void CuIntrospectionPlugin::update() {
             d->thread_count++;
             tcnt++;
             uintptr_t iptr = reinterpret_cast<uintptr_t>(*it);
-            std::list<CuTimerListener *>tlist = timer_service->getListeners(*it);
+            std::list<const CuTimerListener *>tlist = timer_service->getListeners(*it);
             TimerInfo ti;
             ti.name = QString("CuTimer_%1 [0x%2]").arg(tcnt).arg(iptr, 0, 10);
             ti.timeout = (*it)->timeout();
