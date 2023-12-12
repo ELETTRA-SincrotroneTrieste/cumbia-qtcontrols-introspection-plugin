@@ -164,13 +164,8 @@ void CuIntrospectionPlugin::update() {
     }
 }
 
-QString CuIntrospectionPlugin::findName(const CuData &data_tok) const {
-    foreach(const QString& s, d->name_search_keys) {
-        if(data_tok.containsKey(qstoc(s))) {
-            return QuString(data_tok, qstoc(s));
-        }
-    }
-    return QString();
+QString CuIntrospectionPlugin::findName(const std::string &th_tok) const {
+    return QString::fromStdString(th_tok);
 }
 
 QMap<QString, ThreadInfo> CuIntrospectionPlugin::getThreadInfo() {
@@ -239,7 +234,7 @@ QStandardItemModel *CuIntrospectionPlugin::toItemModel() const {
             CuThread *th = dynamic_cast<CuThread *>(tlis);
             if(th != nullptr) {
                 const std::string& tok = th->getToken();
-                QString thnam = findName(tok);
+                const QString &thnam = findName(tok);
                 timer_it->appendRow(new QStandardItem (thnam));
             }
         }
