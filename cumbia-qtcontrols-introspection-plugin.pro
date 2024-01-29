@@ -4,6 +4,8 @@ isEmpty(INSTALL_ROOT) {
 
 include($${INSTALL_ROOT}/include/cumbia-qtcontrols/cumbia-qtcontrols.pri)
 
+QUMBIA_PLUGINS_LIBDIR=$${INSTALL_ROOT}/lib/qumbia-plugins
+
 SOURCES += \
     src/cuintrospectionplugin.cpp
 
@@ -57,7 +59,7 @@ Doxyfile;
 QMAKE_EXTRA_TARGETS += doc
 
 
-    target.path = $${DEFINES_CUMBIA_QTCONTROLS_PLUGIN_DIR}
+    target.path = $${QUMBIA_PLUGINS_LIBDIR}
     INSTALLS += target inc doc
 
 
