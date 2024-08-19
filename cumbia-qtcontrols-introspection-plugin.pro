@@ -30,8 +30,19 @@ packagesExist(cumbia) {
     message("cumbia-qtcontrols-introspection-plugin: missing dependency cumbia in PKG_CONFIG_PATH")
 }
 
-CONFIG += debug
-DEFINES -= QT_NO_DEBUG_OUTPUT
+isEmpty(buildtype) {
+        buildtype = release
+} else {
+    equals(buildtype, debug) {
+        message("")
+        message("debug build")
+        message("")
+    }
+}
+
+CONFIG += $${buildtype}
+
+DEFINES += QT_NO_DEBUG_OUTPUT
 
 INCLUDEPATH += src
 
